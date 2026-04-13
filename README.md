@@ -61,6 +61,26 @@ curl "http://localhost:8000/api/customers?page=1&limit=5"
 curl http://localhost:8000/api/customers/CUST-001
 ```
 
+## Updating Customer Data
+
+The mock server reads from `mock-server/data/customers.json`, which is copied into the Docker image at build time. To update the data:
+
+```bash
+# 1. Edit the JSON file
+#    e.g., change a customer's name in mock-server/data/customers.json
+
+# 2. Rebuild the mock server to pick up changes
+docker-compose up -d --build mock-server
+
+# 3. Re-ingest to sync changes into PostgreSQL
+curl -X POST http://localhost:8000/api/ingest
+
+# 4. Verify the update
+curl http://localhost:8000/api/customers/CUST-001
+```
+
+The ingest endpoint uses upsert logic (dlt `merge`) — existing records are updated by `customer_id`, no duplicates are created.
+
 ## Configuration
 
 All settings have sensible defaults no extra setup needed. Override via environment variables if required:
